@@ -37,15 +37,26 @@ class App(tk.Tk):
         while True:
             conn, addr = s.accept()
             print('Got connection from', addr)
-            data = conn.recv(1024)
+            data = conn.recv(30)
             data = data.decode()
+            data = data.strip()
             poruka = 'dsadas'
             if data == "napravi_tabelu":
-                db_create_table('automobili')
                 poruka = "Tabela napravljena"
+                try:
+                    db_create_table('automobili')
+                except:
+                    poruka = "Tabela vec postoji"
                 print(poruka)
-
-            conn.send(poruka.encode())
+            elif data == "napravi_zapis":
+                data = conn.recv(1024)
+                data = data.decode()
+                insert_data = data.split(" ")
+                db_insert(insert_data)
+                poruka = "Zapis unet: " + data
+            elif data == "vrati_zapise":
+                poruka = db_select(None)
+            conn.send(str(poruka).encode())
             conn.close()
 
 app = App()
